@@ -1,6 +1,9 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))) # Add the parent directory to the Python path
+print("sys.path")
+for p in sys.path:
+    print(p)
 from adapters.BME280_adapter import BME280Sensor, average
 from adapters.ledstrip_adapter import LEDStripAdapter
 import time

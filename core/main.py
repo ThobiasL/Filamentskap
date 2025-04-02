@@ -80,12 +80,14 @@ def main():
             time.sleep(2)
         except KeyboardInterrupt:
             print("Program terminated by user.")
-        except Exception as e:
-            print(f"An error occurred: {e}")
-        finally:
-            # Lukker alle adaptere
             sensor1.close()
             sensor2.close()
+            exit()
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            sensor1.close()
+            sensor2.close()
+            exit()
 
 if __name__ == "__main__":
     main()

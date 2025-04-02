@@ -20,7 +20,7 @@ def main():
     sensor2 = BME280Sensor(0x76)
 
     # Initialize adapters for LED strip
-    ledstrip = LEDStripAdapter(17, pin = 18)
+    ledstrip = LEDStripAdapter(17, pin = 18) # GPIO 18
     ledstrip.clear()
     ledstrip.set_color(normal_led_state)
     time.sleep(0.1)

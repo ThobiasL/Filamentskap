@@ -6,7 +6,7 @@ import neopixel
 class LEDStripAdapter(LedStripPort):
     def __init__(self, num_pixels: int, pin: int = board.D18, brightness: float = 1) -> None:
         self.num_pixels = num_pixels
-        self.pin = pin
+        self.pin = getattr(board, f'D{pin}')
         self.brightness = brightness
         self.pixels = neopixel.NeoPixel(self.pin, self.num_pixels, brightness=self.brightness, auto_write=False)
 

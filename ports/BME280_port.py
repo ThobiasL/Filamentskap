@@ -21,15 +21,15 @@ while True:
 
         temperature_1 = data_1.temperature
         temperature_2 = data_2.temperature
-        print(f"temperature 1: {temperature_1}")
-        print(f"temperature 2: {temperature_2}")
-        print(f"average temp: {average(temperature_1, temperature_2)}")
+        print(f"temperature 1: {round(temperature_1,1)}")
+        print(f"temperature 2: {round(temperature_2,1)}")
+        print(f"average temp: {round(average(temperature_1, temperature_2),1)}")
 
         humidity_1 = data_1.humidity
         humidity_2 = data_2.humidity
-        print(f"humidity 1: {humidity_1}%")
-        print(f"humidity 2: {humidity_2}%")
-        print(f"average humidity: {average(humidity_1, humidity_2)}%")
+        print(f"humidity 1: {round(humidity_1,1)}%")
+        print(f"humidity 2: {round(humidity_2,1)}%")
+        print(f"average humidity: {round(average(humidity_1, humidity_2),1)}%")
 
         time.sleep(2)
 

@@ -1,16 +1,19 @@
 # Filamentskap
 
 test
-sys.path
-/home/filamentskap/skap/Filamentskap/core
-/usr/lib/python311.zip
-/usr/lib/python3.11
-/usr/lib/python3.11/lib-dynload
-/home/filamentskap/skap/skap/lib/python3.11/site-packages
-/home/filamentskap/skap/Filamentskap
 Traceback (most recent call last):
-  File "/home/filamentskap/skap/Filamentskap/core/main.py", line 7, in <module>
-    from adapters.BME280_adapter import BME280Sensor, average
-  File "/home/filamentskap/skap/Filamentskap/adapters/BME280_adapter.py", line 1, in <module>
-    from ports.BME280_port import sensorPort, average
-ImportError: cannot import name 'sensorPort' from 'ports.BME280_port' (/home/filamentskap/skap/Filamentskap/ports/BME280_port.py)
+  File "/home/filamentskap/skap/Filamentskap/core/main.py", line 91, in <module>
+    main()
+  File "/home/filamentskap/skap/Filamentskap/core/main.py", line 23, in main
+    ledstrip = LEDStripAdapter(17, pin = 18)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/filamentskap/skap/Filamentskap/adapters/ledstrip_adapter.py", line 11, in __init__
+    self.pixels = neopixel.NeoPixel(self.pin, self.num_pixels, brightness=self.brightness, auto_write=False)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/filamentskap/skap/skap/lib/python3.11/site-packages/neopixel.py", line 142, in __init__
+    self.pin = digitalio.DigitalInOut(pin)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/filamentskap/skap/skap/lib/python3.11/site-packages/digitalio.py", line 192, in __init__
+    self._pin = Pin(pin.id)
+                    ^^^^^^
+AttributeError: 'int' object has no attribute 'id'

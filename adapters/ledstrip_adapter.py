@@ -1,4 +1,4 @@
-import ports.ledstrip_port as LedStripPort
+from ports.ledstrip_port import LedStripPort
 import time
 import board
 import neopixel

@@ -1,9 +1,9 @@
-import ports.ledstrip_port as ledstripPort
+import ports.ledstrip_port as LedStripPort
 import time
 import board
 import neopixel
 
-class LEDStripAdapter(ledstripPort):
+class LEDStripAdapter(LedStripPort):
     def __init__(self, num_pixels: int, pin: int = board.D18, brightness: float = 1) -> None:
         self.num_pixels = num_pixels
         self.pin = pin

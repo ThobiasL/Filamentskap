@@ -1,10 +1,45 @@
-import time
 from adapters.BME280_adapter import BME280Sensor, average
+from adapters.ledstrip_adapter import LEDStripAdapter
+import time
 
 def main():
-    # Initialize adapters
+    # Seting up variables
+    normal_led_state = (255, 255, 255)
+    warning_led_state = (255, 0, 0) # Red color for warning
+    led_warning_signal = False
+    timer = 0
+    #maneul_override = False
+
+    # Initialize adapters for BME280 sensors
     sensor1 = BME280Sensor(0x77)
     sensor2 = BME280Sensor(0x76)
+
+    # Initialize adapters for LED strip
+    ledstrip = LEDStripAdapter(30, pin = 18, brightness = 1)
+    ledstrip.clear()
+    ledstrip.set_color(normal_led_state)
+    time.sleep(0.1)
+
+    # Function for LED strip
+    def warning_led(average_humidity):
+        #if maneul_override:
+        if average_humidity > 60 and not led_warning_signal:
+            ledstrip.clear()
+            ledstrip.set_color(warning_led_state)
+            led_warning_signal = True
+        
+        elif average_humidity < 60 and led_warning_signal:
+            if timer > 20:
+                ledstrip.clear()
+                ledstrip.set_color(normal_led_state)
+                led_warning_signal = False
+                timer = 0
+            else:
+                timer += 1
+                ledstrip.clear()
+                ledstrip.set_color(warning_led_state)
+        
+        time.sleep(0.1)
 
     while True:
         try:
@@ -18,6 +53,9 @@ def main():
             average_temp = round(average(temperature1, temperature2),1)
             average_humidity = round(average(humidity1, humidity2),1)
 
+            # Sjekk om fuktigheten er for høy
+            warning_led(average_humidity)
+
             # Skriv ut verdiene
             print(f"Sensor1 temperature: {temperature1} °C")
             print(f"Sensor2 Temperature: {temperature2} °C")
@@ -25,10 +63,10 @@ def main():
 
             print(f"Sensor1 humidity: {humidity1} %")
             print(f"Sensor2 humidity: {humidity2} %")
-            print(f"Average Humidity: {average_humidity} %")
+            print(f"Average Humidity: {average_humidity} %")                
+
 
             time.sleep(2)
-
         except KeyboardInterrupt:
             print("Program terminated by user.")
         except Exception as e:
@@ -37,6 +75,6 @@ def main():
             # Lukker alle adaptere
             sensor1.close()
             sensor2.close()
-            
+
 if __name__ == "__main__":
     main()

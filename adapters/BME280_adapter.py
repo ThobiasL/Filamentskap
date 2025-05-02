@@ -1,5 +1,4 @@
 from ports.BME280_port import sensorPort, average
-#import RPi.GPIO as gpio
 import smbus2
 import bme280
 

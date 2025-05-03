@@ -1,3 +1,9 @@
+import sys
+import os
+# Legg til prosjektroten i sys.path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if project_root not in sys.path:
+    sys.path.append(project_root)
 from adapters.BME280_adapter import BME280Sensor, average
 from adapters.ledstrip_adapter import LEDStripAdapter
 import time

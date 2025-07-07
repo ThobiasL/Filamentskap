@@ -3,7 +3,14 @@ from flask import Flask, render_template, jsonify, request
 app = Flask(__name__)
 
 # Global for siste data
-current_data = {'temperature': None, 'humidity': None}
+current_data = {
+    'temp1': 0,
+    'temp2': 0,
+    'average_temp': 0,
+    'humid1': 0,
+    'humid2': 0,
+    'average_humid': 0
+}
 
 @app.route('/')
 def index():
@@ -11,22 +18,16 @@ def index():
 
 @app.route('/data')
 def data():
-    # Gir siste mottatte data til klienten
     return jsonify(current_data)
 
 @app.route('/update', methods=['POST'])
 def update():
     global current_data
     payload = request.get_json()
-    if 'average_temp' in payload and 'average_humid' in payload:
-        current_data = {
-            'temp1': payload['temp1'],
-            'temp2': payload['temp2'],
-            'average_temp': payload['average_temp'],
-            'humid1': payload['humid1'],
-            'humid2': payload['humid2'],
-            'average_humid': payload['average_humid']
-        }
+    # sjekk at alle nøkler finnes
+    required = ['temp1','temp2','average_temp','humid1','humid2','average_humid']
+    if all(k in payload for k in required):
+        current_data = { k: payload[k] for k in required }
         return '', 204
     else:
         return 'Bad payload', 400

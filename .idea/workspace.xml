@@ -5,11 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1d3ead70-1e20-407c-9e5d-72f992b9d8d9" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/adapters/app_adapter.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/application/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/application/app.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/application/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/application/static/styles.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/adapters/app_adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/adapters/app_adapter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/application/app.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/run.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/test.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,6 +21,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Python Script" />
+        <option value="HTML File" />
       </list>
     </option>
   </component>
@@ -37,6 +39,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "webapp",

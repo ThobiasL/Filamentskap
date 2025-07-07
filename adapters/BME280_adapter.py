@@ -1,4 +1,4 @@
-from ports.BME280_port import SensorPort, average
+from ports.TempAndHumidSensor_port import SensorPort, average
 import smbus2
 import bme280
 

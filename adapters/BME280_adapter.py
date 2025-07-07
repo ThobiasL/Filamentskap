@@ -1,9 +1,8 @@
-from ports.BME280_port import sensorPort, average
-#import RPi.GPIO as gpio
+from ports.TempAndHumidSensor_port import SensorPort, average
 import smbus2
 import bme280
 
-class BME280Sensor(sensorPort):
+class BME280Sensor(SensorPort):
     def __init__(self, address, bus=1):
         self.address = address
         self.bus = smbus2.SMBus(bus)

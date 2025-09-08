@@ -1,24 +1,19 @@
 # Filamentskap
 
-test
-Can't open /dev/mem: Permission denied
 Traceback (most recent call last):
-  File "/home/filamentskap/skap/Filamentskap/core/main.py", line 91, in <module>
-    main()
-  File "/home/filamentskap/skap/Filamentskap/core/main.py", line 24, in main
-    ledstrip.clear()
-  File "/home/filamentskap/skap/Filamentskap/adapters/ledstrip_adapter.py", line 24, in clear
-    self.pixels.show()
-  File "/home/filamentskap/skap/skap/lib/python3.11/site-packages/adafruit_pixelbuf.py", line 204, in show
-    return self._transmit(self._post_brightness_buffer)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/filamentskap/skap/skap/lib/python3.11/site-packages/neopixel.py", line 181, in _transmit
-    neopixel_write(self.pin, buffer)
-  File "/home/filamentskap/skap/skap/lib/python3.11/site-packages/neopixel_write.py", line 49, in neopixel_write
-    return _neopixel.neopixel_write(gpio, buf)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/filamentskap/skap/skap/lib/python3.11/site-packages/adafruit_blinka/microcontroller/bcm283x/neopixel.py", line 78, in neopixel_write
-    raise RuntimeError(
-RuntimeError: NeoPixel support requires running with sudo, please try again!
-swig/python detected a memory leak of type 'ws2811_t *', no destructor found.
+  File "/home/filamentskap/skap/Filamentskap/application/gui_bme280_tk.py", line 40, in _try_imports
+    from BME280_adapter import BME280Sensor  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'BME280_adapter'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/filamentskap/skap/Filamentskap/application/gui_bme280_tk.py", line 57, in <module>
+    BME280Sensor, average = _try_imports()
+                            ^^^^^^^^^^^^^^
+  File "/home/filamentskap/skap/Filamentskap/application/gui_bme280_tk.py", line 51, in _try_imports
+    raise ImportError(
+ImportError: Kunne ikke importere BME280-adapteren og/eller average()-funksjonen. Sørg for at filene er tilgjengelige, og at 'bme280' og 'smbus2' er installert.
+Original feil: No module named 'BME280_adapter'
 

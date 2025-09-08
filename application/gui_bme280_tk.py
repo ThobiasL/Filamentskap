@@ -58,7 +58,7 @@ BME280Sensor, average = _try_imports()
 
 
 class SensorReader:
-    \"\"\"Background polling of two BME280 sensors.\"\"\"
+    '''\"\"\"Background polling of two BME280 sensors.\"\"\"'''
 
     def __init__(self, addr1=0x77, addr2=0x76, interval=2.0):
         self.addr1 = addr1

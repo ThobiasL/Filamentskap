@@ -15,7 +15,6 @@ def main():
     timer_limit = 20
     maneul_override = False
 
-
     # Initialize adapters for BME280 sensors
     sensor1 = BME280Sensor(0x77)
     sensor2 = BME280Sensor(0x76)
@@ -27,7 +26,7 @@ def main():
     time.sleep(0.1)
 
     # Function for LED strip
-    def warning_led(average_humidity, maneul_override, led_warning_signal, timer, timer_limit):
+    def warning_led(average_humidity):
         if not maneul_override:
             if average_humidity > humidity_limit and not led_warning_signal:
                 ledstrip.clear()
@@ -50,6 +49,7 @@ def main():
         else:
             timer += 1
 
+        
         time.sleep(0.1)
 
     while True:
@@ -74,9 +74,9 @@ def main():
 
             print(f"Sensor1 humidity: {humidity1} %")
             print(f"Sensor2 humidity: {humidity2} %")
-            print(f"Average Humidity: {average_humidity} %")
+            print(f"Average Humidity: {average_humidity} %")                
 
-            
+
             time.sleep(2)
         except KeyboardInterrupt:
             print("Program terminated by user.")

@@ -26,7 +26,7 @@ def main():
     time.sleep(0.1)
 
     # Function for LED strip
-    def warning_led(average_humidity):
+    def warning_led(average_humidity, maneul_override, led_warning_signal, timer, timer_limit):
         if not maneul_override:
             if average_humidity > humidity_limit and not led_warning_signal:
                 ledstrip.clear()
@@ -49,8 +49,8 @@ def main():
         else:
             timer += 1
 
-        
         time.sleep(0.1)
+
 
     while True:
         try:
@@ -74,7 +74,7 @@ def main():
 
             print(f"Sensor1 humidity: {humidity1} %")
             print(f"Sensor2 humidity: {humidity2} %")
-            print(f"Average Humidity: {average_humidity} %")                
+            print(f"Average Humidity: {average_humidity} %")
 
 
             time.sleep(2)

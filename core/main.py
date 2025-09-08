@@ -3,7 +3,6 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))) # Add the parent directory to the Python path
 from adapters.BME280_adapter import BME280Sensor, average
 from adapters.ledstrip_adapter import LEDStripAdapter
-import requests
 import time
 
 def main():
@@ -15,7 +14,6 @@ def main():
     timer = 0
     timer_limit = 20
     maneul_override = False
-    FLASK_URL = 'http://localhost:5000/update'  # URL for the Flask application
 
     # Initialize adapters for BME280 sensors
     sensor1 = BME280Sensor(0x77)
@@ -53,21 +51,6 @@ def main():
 
         time.sleep(0.1)
 
-    def SendDataToWebApp(temperature1, temperature2, average_temp, humidity1, humidity2, average_humidity):
-        payload = {
-            'temp1': temperature1,
-            'temp2': temperature2,
-            'average_temp': average_temp,
-            'humid1': humidity1,
-            'humid2': humidity2,
-            'average_humid': average_humidity
-        }
-        try:
-            resp = requests.post(FLASK_URL, json=payload, timeout=1)
-            resp.raise_for_status()
-            print(f"[OK] Sendt: {payload}")
-        except requests.RequestException as e:
-            print(f"[ERROR] Kunne ikke sende data: {e}")
 
     while True:
         try:
@@ -93,8 +76,6 @@ def main():
             print(f"Sensor2 humidity: {humidity2} %")
             print(f"Average Humidity: {average_humidity} %")
 
-            # send data to web app
-            SendDataToWebApp(temperature1, temperature2, average_temp, humidity1, humidity2, average_humidity)
 
             time.sleep(2)
         except KeyboardInterrupt:

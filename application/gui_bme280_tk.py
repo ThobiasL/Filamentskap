@@ -1,75 +1,47 @@
-#!/usr/bin/env python3
-"""
-GUI for displaying temperature and humidity from two BME280 sensors.
+# Create a Tkinter GUI that imports sensor access **via main.py** (not directly from adapters).
+# It expects main.py to export BME280Sensor and average (as in the user's main.py).
 
-- Polls two BME280 sensors (default I2C addresses 0x77 and 0x76).
+from pathlib import Path
+
+code = r'''#!/usr/bin/env python3'''
+"""
+GUI for displaying temperature and humidity that **imports from main.py**.
+
+- Imports BME280Sensor and average **from main.py**, to ensure all cross-module
+  access goes through main.py (as requested).
+- Polls two sensors at I2C addresses 0x77 and 0x76.
 - Shows each sensor's temperature & humidity and the averages.
-- Updates every 2 seconds.
-- Uses the existing adapters/ports if available, otherwise falls back to local files.
+- Updates UI every 500 ms.
 """
 
-import sys
-import os
 import time
 import threading
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-# --- Import helpers to support both "adapters/ports" layout and flat files ---
-def _try_imports():
-    sensor_cls = None
-    avg_fn = None
-
-    # 1) Try package-style imports
-    try:
-        from adapters.BME280_adapter import BME280Sensor  # type: ignore
-        from ports.TempAndHumidSensor_port import average  # type: ignore
-        sensor_cls = BME280Sensor
-        avg_fn = average
-        return sensor_cls, avg_fn
-    except Exception:
-        pass
-
-    # 2) Try flat-file imports
-    try:
-        # If the files are in the same folder as this script, make sure it's on sys.path
-        here = os.path.abspath(os.path.dirname(__file__))
-        if here not in sys.path:
-            sys.path.insert(0, here)
-
-        from BME280_adapter import BME280Sensor  # type: ignore
-        try:
-            # Prefer the ports helper if present
-            from ports.TempAndHumidSensor_port import average  # type: ignore
-        except Exception:
-            from TempAndHumidSensor_port import average  # type: ignore
-
-        sensor_cls = BME280Sensor
-        avg_fn = average
-        return sensor_cls, avg_fn
-    except Exception as e:
-        raise ImportError(
-            "Kunne ikke importere BME280-adapteren og/eller average()-funksjonen. "
-            "Sørg for at filene er tilgjengelige, og at 'bme280' og 'smbus2' er installert.\n"
-            f"Original feil: {e}"
-        )
-
-BME280Sensor, average = _try_imports()
+# --- Import strictly via main.py ---
+try:
+    from Filamentskap/core/main import BME280Sensor, average  # <- NOTE: comes through main.py
+except Exception as e:
+    raise ImportError(
+        "Kunne ikke importere nødvendige symboler fra main.py. "
+        "Sørg for at main.py eksporterer BME280Sensor og average.\n"
+        f"Original feil: {e}"
+    )
 
 
 class SensorReader:
-    '''\"\"\"Background polling of two BME280 sensors.\"\"\"'''
+    \"\"\"Background polling of two BME280 sensors (via main.py).\"\"\"
 
     def __init__(self, addr1=0x77, addr2=0x76, interval=2.0):
         self.addr1 = addr1
         self.addr2 = addr2
         self.interval = float(interval)
 
-        # Instantiate sensors
+        # Instantiate sensors THROUGH main.py exports
         self.s1 = BME280Sensor(self.addr1)
         self.s2 = BME280Sensor(self.addr2)
 
-        # State
         self._stop = threading.Event()
         self.latest = {
             "t1": None, "h1": None,
@@ -85,23 +57,29 @@ class SensorReader:
 
     def stop(self):
         self._stop.set()
-        # Best-effort: BME280_adapter doesn't expose a close() method, so nothing to close explicitly.
+        # Best-effort clean up if adapter exposes close()
+        for s in (self.s1, self.s2):
+            if hasattr(s, "close"):
+                try:
+                    s.close()
+                except Exception:
+                    pass
 
     def _loop(self):
         while not self._stop.is_set():
             try:
-                t1 = round(float(self.s1.read_temperature()), 1)
-                t2 = round(float(self.s2.read_temperature()), 1)
-                h1 = round(float(self.s1.read_humidity()), 1)
-                h2 = round(float(self.s2.read_humidity()), 1)
+                t1 = float(self.s1.read_temperature())
+                t2 = float(self.s2.read_temperature())
+                h1 = float(self.s1.read_humidity())
+                h2 = float(self.s2.read_humidity())
 
-                t_avg = round(float(average(t1, t2)), 1)
-                h_avg = round(float(average(h1, h2)), 1)
+                t_avg = average(t1, t2)
+                h_avg = average(h1, h2)
 
                 self.latest.update({
-                    "t1": t1, "h1": h1,
-                    "t2": t2, "h2": h2,
-                    "t_avg": t_avg, "h_avg": h_avg,
+                    "t1": round(t1, 1), "h1": round(h1, 1),
+                    "t2": round(t2, 1), "h2": round(h2, 1),
+                    "t_avg": round(t_avg, 1), "h_avg": round(h_avg, 1),
                     "error": None,
                 })
             except Exception as e:
@@ -113,36 +91,31 @@ class SensorReader:
 class App(tk.Tk):
     def __init__(self, poll_interval_ms=500):
         super().__init__()
-        self.title("Temp & Humidity (BME280)")
+        self.title("Temp & Humidity (via main.py)")
         self.geometry("520x280")
         self.resizable(False, False)
 
-        # Styling
         try:
             self.tk.call("tk", "scaling", 1.25)
         except Exception:
             pass
 
-        self.style = ttk.Style(self)
-        self.style.configure("Title.TLabel", font=("Segoe UI", 16, "bold"))
-        self.style.configure("Value.TLabel", font=("Segoe UI", 14))
-        self.style.configure("Unit.TLabel", font=("Segoe UI", 10), foreground="#555")
-        self.style.configure("Status.TLabel", font=("Segoe UI", 10), foreground="#a00")
+        style = ttk.Style(self)
+        style.configure("Title.TLabel", font=("Segoe UI", 16, "bold"))
+        style.configure("Value.TLabel", font=("Segoe UI", 14))
+        style.configure("Status.TLabel", font=("Segoe UI", 10), foreground="#a00")
 
         # Header
-        header = ttk.Label(self, text="Temperatur & Fuktighet", style="Title.TLabel")
-        header.pack(pady=(14, 8))
+        ttk.Label(self, text="Temperatur & Fuktighet", style="Title.TLabel").pack(pady=(14, 8))
 
-        # Grid for values
-        container = ttk.Frame(self, padding=16)
-        container.pack(fill="both", expand=True)
+        # Grid
+        frame = ttk.Frame(self, padding=16)
+        frame.pack(fill="both", expand=True)
 
-        # Column headers
-        ttk.Label(container, text="Sensor", font=("Segoe UI", 11, "bold")).grid(row=0, column=0, padx=6, pady=4, sticky="w")
-        ttk.Label(container, text="Temperatur (°C)", font=("Segoe UI", 11, "bold")).grid(row=0, column=1, padx=6, pady=4)
-        ttk.Label(container, text="Fuktighet (%)", font=("Segoe UI", 11, "bold")).grid(row=0, column=2, padx=6, pady=4)
+        ttk.Label(frame, text="Sensor", font=("Segoe UI", 11, "bold")).grid(row=0, column=0, padx=6, pady=4, sticky="w")
+        ttk.Label(frame, text="Temperatur (°C)", font=("Segoe UI", 11, "bold")).grid(row=0, column=1, padx=6, pady=4)
+        ttk.Label(frame, text="Fuktighet (%)", font=("Segoe UI", 11, "bold")).grid(row=0, column=2, padx=6, pady=4)
 
-        # Rows for sensor 1 & 2
         self.t1_var = tk.StringVar(value="—")
         self.h1_var = tk.StringVar(value="—")
         self.t2_var = tk.StringVar(value="—")
@@ -150,32 +123,29 @@ class App(tk.Tk):
         self.ta_var = tk.StringVar(value="—")
         self.ha_var = tk.StringVar(value="—")
 
-        ttk.Label(container, text="Sensor 1").grid(row=1, column=0, padx=6, pady=6, sticky="w")
-        ttk.Label(container, textvariable=self.t1_var, style="Value.TLabel").grid(row=1, column=1, padx=6, pady=6)
-        ttk.Label(container, textvariable=self.h1_var, style="Value.TLabel").grid(row=1, column=2, padx=6, pady=6)
+        ttk.Label(frame, text="Sensor 1").grid(row=1, column=0, padx=6, pady=6, sticky="w")
+        ttk.Label(frame, textvariable=self.t1_var, style="Value.TLabel").grid(row=1, column=1, padx=6, pady=6)
+        ttk.Label(frame, textvariable=self.h1_var, style="Value.TLabel").grid(row=1, column=2, padx=6, pady=6)
 
-        ttk.Label(container, text="Sensor 2").grid(row=2, column=0, padx=6, pady=6, sticky="w")
-        ttk.Label(container, textvariable=self.t2_var, style="Value.TLabel").grid(row=2, column=1, padx=6, pady=6)
-        ttk.Label(container, textvariable=self.h2_var, style="Value.TLabel").grid(row=2, column=2, padx=6, pady=6)
+        ttk.Label(frame, text="Sensor 2").grid(row=2, column=0, padx=6, pady=6, sticky="w")
+        ttk.Label(frame, textvariable=self.t2_var, style="Value.TLabel").grid(row=2, column=1, padx=6, pady=6)
+        ttk.Label(frame, textvariable=self.h2_var, style="Value.TLabel").grid(row=2, column=2, padx=6, pady=6)
 
-        ttk.Separator(container).grid(row=3, column=0, columnspan=3, sticky="ew", pady=(8, 4))
+        ttk.Separator(frame).grid(row=3, column=0, columnspan=3, sticky="ew", pady=(8, 4))
 
-        ttk.Label(container, text="Gjennomsnitt", font=("Segoe UI", 11, "bold")).grid(row=4, column=0, padx=6, pady=6, sticky="w")
-        ttk.Label(container, textvariable=self.ta_var, style="Value.TLabel").grid(row=4, column=1, padx=6, pady=6)
-        ttk.Label(container, textvariable=self.ha_var, style="Value.TLabel").grid(row=4, column=2, padx=6, pady=6)
+        ttk.Label(frame, text="Gjennomsnitt", font=("Segoe UI", 11, "bold")).grid(row=4, column=0, padx=6, pady=6, sticky="w")
+        ttk.Label(frame, textvariable=self.ta_var, style="Value.TLabel").grid(row=4, column=1, padx=6, pady=6)
+        ttk.Label(frame, textvariable=self.ha_var, style="Value.TLabel").grid(row=4, column=2, padx=6, pady=6)
 
-        # Status line
         self.status_var = tk.StringVar(value="Starter sensorer…")
         ttk.Label(self, textvariable=self.status_var, style="Status.TLabel").pack(pady=(0, 8))
 
-        # Reader + schedule UI updates
         self.reader = SensorReader()
         self.reader.start()
 
         self.poll_interval_ms = int(poll_interval_ms)
         self.after(self.poll_interval_ms, self._refresh)
 
-        # Close handling
         self.protocol("WM_DELETE_WINDOW", self._on_close)
 
     def _refresh(self):
@@ -184,7 +154,7 @@ class App(tk.Tk):
             self.status_var.set(f"Feil: {data['error']}")
         else:
             self.status_var.set("Oppdatert")
-        # Update labels if values exist
+
         def fmt(v):
             return "—" if v is None else f"{v:.1f}"
 
@@ -211,3 +181,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+p = Path("/mnt/data/gui_from_main_tk.py")
+p.write_text(code, encoding="utf-8")
+print(f"Wrote: {p}")

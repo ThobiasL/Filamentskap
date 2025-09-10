@@ -132,7 +132,7 @@ class TemperatureHumidityGUI:
     def setup_window(self):
         """Configure the main window"""
         self.root.title("Filament Storage Monitor")
-        self.root.geometry("800x600")
+        self.root.geometry("1000x700")
         self.root.configure(bg="#1E1E1E")
         self.root.resizable(True, True)
 
@@ -249,7 +249,7 @@ class TemperatureHumidityGUI:
         self.canvas.delete("hexagon")
 
         # Calculate positions and size
-        hex_size = min(canvas_width, canvas_height) // 8
+        hex_size = min(canvas_width, canvas_height) // 6
         if hex_size < 30:
             hex_size = 30
 
@@ -262,10 +262,10 @@ class TemperatureHumidityGUI:
 
         # Create individual sensor hexagons (top row)
         positions = [
-            (center_x - spacing_x, center_y - spacing_y // 2, "Sensor 1 Temp", "#FF5722"),
-            (center_x + spacing_x, center_y - spacing_y // 2, "Sensor 1 Humidity", "#2196F3"),
-            (center_x - spacing_x, center_y + spacing_y // 2, "Sensor 2 Temp", "#FF5722"),
-            (center_x + spacing_x, center_y + spacing_y // 2, "Sensor 2 Humidity", "#2196F3"),
+            (center_x - spacing_x - 40, center_y - spacing_y // 2, "Sensor 1 Temp", "#FF5722"),
+            (center_x + spacing_x + 40, center_y - spacing_y // 2, "Sensor 1 Humidity", "#2196F3"),
+            (center_x - spacing_x - 40, center_y + spacing_y // 2, "Sensor 2 Temp", "#FF5722"),
+            (center_x + spacing_x + 40, center_y + spacing_y // 2, "Sensor 2 Humidity", "#2196F3"),
         ]
 
         # Average hexagons (center)

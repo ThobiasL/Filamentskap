@@ -21,7 +21,13 @@ from tkinter import ttk, messagebox
 
 # --- Import strictly via main.py ---
 try:
-    from Filamentskap/core/main import BME280Sensor, average  # <- NOTE: comes through main.py
+    try:
+        from ..core.main import BME280Sensor, average  # Adjusted to relative import
+    except ImportError:
+        raise ImportError(
+            "Kunne ikke importere nødvendige symboler fra main.py. "
+            "Sørg for at main.py eksporterer BME280Sensor og average."
+        )
 except Exception as e:
     raise ImportError(
         "Kunne ikke importere nødvendige symboler fra main.py. "
@@ -31,7 +37,7 @@ except Exception as e:
 
 
 class SensorReader:
-    \"\"\"Background polling of two BME280 sensors (via main.py).\"\"\"
+    """Background polling of two BME280 sensors (via main.py)."""
 
     def __init__(self, addr1=0x77, addr2=0x76, interval=2.0):
         self.addr1 = addr1

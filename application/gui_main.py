@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-GUI Program for Raspberry Pi - Temperature and Humidity Monitor
-File: Filamentskap/application/gui_main.py
+Updated GUI Program that reads from Data Bridge
+File: Filamentskap/application/gui_main_with_bridge.py
 """
 
 import sys
@@ -11,18 +11,8 @@ from tkinter import ttk
 import threading
 import time
 import math
-
-# Add the parent directory to the Python path to access core modules
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'core')))
-
-try:
-    from adapters.BME280_adapter import BME280Sensor, average
-    from adapters.ledstrip_adapter import LEDStripAdapter
-
-    SENSORS_AVAILABLE = True
-except ImportError:
-    print("Warning: Hardware adapters not available. Running in simulation mode.")
-    SENSORS_AVAILABLE = False
+import json
+from datetime import datetime
 
 
 class HexagonWidget:
@@ -97,37 +87,16 @@ class HexagonWidget:
         self.canvas.itemconfig(self.hexagon_id, fill=color)
 
 
-class SensorSimulator:
-    """Simulator for testing without actual hardware"""
-
-    def __init__(self, base_temp=22.0, base_humidity=45.0):
-        self.base_temp = base_temp
-        self.base_humidity = base_humidity
-        import random
-        self.random = random
-
-    def read_temperature(self):
-        # Simulate temperature variation
-        return self.base_temp + self.random.uniform(-2.0, 3.0)
-
-    def read_humidity(self):
-        # Simulate humidity variation
-        return self.base_humidity + self.random.uniform(-10.0, 15.0)
-
-    def close(self):
-        pass
-
-
-class TemperatureHumidityGUI:
-    """Main GUI application class"""
+class TemperatureHumidityGUIWithBridge:
+    """Main GUI application class that reads from data bridge"""
 
     def __init__(self, root):
         self.root = root
         self.setup_window()
         self.setup_variables()
-        self.setup_sensors()
+        self.setup_data_source()
         self.create_widgets()
-        self.start_sensor_thread()
+        self.start_data_thread()
 
     def setup_window(self):
         """Configure the main window"""
@@ -143,43 +112,27 @@ class TemperatureHumidityGUI:
     def setup_variables(self):
         """Initialize application variables"""
         self.running = True
-        self.update_interval = 2.0  # seconds
+        self.update_interval = 1.0  # Check for new data every second
 
         # Sensor data variables
-        self.temp1 = 0.0
-        self.temp2 = 0.0
-        self.humidity1 = 0.0
-        self.humidity2 = 0.0
-        self.avg_temp = 0.0
-        self.avg_humidity = 0.0
+        self.sensor_data = {
+            'sensor1': {'temperature': 0.0, 'humidity': 0.0},
+            'sensor2': {'temperature': 0.0, 'humidity': 0.0},
+            'averages': {'temperature': 0.0, 'humidity': 0.0},
+            'status': {'humidity_warning': False, 'system_status': 'disconnected'},
+            'timestamp': None
+        }
 
-        # Warning settings
-        self.humidity_limit = 60.0
-        self.warning_active = False
+        self.last_update = None
+        self.connection_status = "Connecting..."
 
-    def setup_sensors(self):
-        """Initialize sensors or simulators"""
-        if SENSORS_AVAILABLE:
-            try:
-                self.sensor1 = BME280Sensor(0x77)
-                self.sensor2 = BME280Sensor(0x76)
-                self.ledstrip = LEDStripAdapter(17, pin=18)
-                self.ledstrip.clear()
-                self.ledstrip.set_color((255, 255, 255))
-                print("Hardware sensors initialized successfully")
-            except Exception as e:
-                print(f"Failed to initialize hardware: {e}")
-                print("Falling back to simulation mode")
-                self.setup_simulators()
-        else:
-            self.setup_simulators()
+    def setup_data_source(self):
+        """Setup data source path"""
+        self.app_dir = os.path.dirname(os.path.abspath(__file__))
+        self.project_root = os.path.dirname(self.app_dir)
+        self.data_file = os.path.join(self.project_root, 'data', 'sensor_data.json')
 
-    def setup_simulators(self):
-        """Setup sensor simulators for testing"""
-        self.sensor1 = SensorSimulator(22.0, 45.0)
-        self.sensor2 = SensorSimulator(23.0, 47.0)
-        self.ledstrip = None
-        print("Running in simulation mode")
+        print(f"Looking for data file: {self.data_file}")
 
     def create_widgets(self):
         """Create and arrange GUI widgets"""
@@ -189,15 +142,27 @@ class TemperatureHumidityGUI:
         main_frame.grid_rowconfigure(1, weight=1)
         main_frame.grid_columnconfigure(0, weight=1)
 
-        # Title
+        # Title with connection status
+        title_frame = tk.Frame(main_frame, bg="#1E1E1E")
+        title_frame.grid(row=0, column=0, pady=20)
+
         title_label = tk.Label(
-            main_frame,
+            title_frame,
             text="🌡️ Filament Storage Monitor 💧",
             font=("Arial", 24, "bold"),
             bg="#1E1E1E",
             fg="white"
         )
-        title_label.grid(row=0, column=0, pady=20)
+        title_label.pack()
+
+        self.connection_label = tk.Label(
+            title_frame,
+            text="🔄 Connecting to data bridge...",
+            font=("Arial", 10),
+            bg="#1E1E1E",
+            fg="#FFA726"
+        )
+        self.connection_label.pack(pady=(5, 0))
 
         # Canvas for hexagons
         self.canvas = tk.Canvas(
@@ -212,23 +177,41 @@ class TemperatureHumidityGUI:
         status_frame.grid(row=2, column=0, sticky="ew", pady=10)
         status_frame.grid_columnconfigure(1, weight=1)
 
-        # Status label
+        # Status labels
         tk.Label(
             status_frame,
-            text="Status:",
-            font=("Arial", 12, "bold"),
+            text="Last Update:",
+            font=("Arial", 10, "bold"),
             bg="#1E1E1E",
             fg="white"
         ).grid(row=0, column=0, padx=(0, 10))
 
-        self.status_label = tk.Label(
+        self.last_update_label = tk.Label(
             status_frame,
-            text="Initializing...",
-            font=("Arial", 12),
+            text="Never",
+            font=("Arial", 10),
             bg="#1E1E1E",
             fg="#4CAF50"
         )
-        self.status_label.grid(row=0, column=1, sticky="w")
+        self.last_update_label.grid(row=0, column=1, sticky="w")
+
+        # Data source info
+        tk.Label(
+            status_frame,
+            text="Data Source:",
+            font=("Arial", 10, "bold"),
+            bg="#1E1E1E",
+            fg="white"
+        ).grid(row=1, column=0, padx=(0, 10))
+
+        self.data_source_label = tk.Label(
+            status_frame,
+            text="Data Bridge (JSON)",
+            font=("Arial", 10),
+            bg="#1E1E1E",
+            fg="#2196F3"
+        )
+        self.data_source_label.grid(row=1, column=1, sticky="w")
 
         # Bind canvas resize event
         self.canvas.bind("<Configure>", self.on_canvas_resize)
@@ -248,138 +231,157 @@ class TemperatureHumidityGUI:
         # Clear existing hexagons
         self.canvas.delete("hexagon")
 
-        # Calculate positions and size
+        # Calculate larger size for hexagons
         hex_size = min(canvas_width, canvas_height) // 6
-        if hex_size < 30:
-            hex_size = 30
+        if hex_size < 50:
+            hex_size = 50
 
-        # Position calculations for better layout
+        # Arrange hexagons in two horizontal rows without overlapping
         center_x = canvas_width // 2
         center_y = canvas_height // 2
 
-        spacing_x = hex_size * 2.5
-        spacing_y = hex_size * 2.2
+        # Calculate spacing to prevent overlap
+        spacing_x = hex_size * 2.8
+        row_spacing = hex_size * 2.5
 
-        # Create individual sensor hexagons (top row)
-        positions = [
-            (center_x - spacing_x - 40, center_y - spacing_y // 2, "Sensor 1 Temp", "#FF5722"),
-            (center_x + spacing_x + 40, center_y - spacing_y // 2, "Sensor 1 Humidity", "#2196F3"),
-            (center_x - spacing_x - 40, center_y + spacing_y // 2, "Sensor 2 Temp", "#FF5722"),
-            (center_x + spacing_x + 40, center_y + spacing_y // 2, "Sensor 2 Humidity", "#2196F3"),
+        # Top row positions
+        top_row_y = center_y - row_spacing // 2
+        top_positions = [
+            (center_x - spacing_x * 1.5, top_row_y, "Sensor 1 Temp", "#FF5722"),
+            (center_x - spacing_x * 0.5, top_row_y, "Avg Temp", "#4CAF50"),
+            (center_x + spacing_x * 0.5, top_row_y, "Avg Humidity", "#009688"),
+            (center_x + spacing_x * 1.5, top_row_y, "Sensor 1 Humidity", "#2196F3"),
         ]
 
-        # Average hexagons (center)
-        avg_positions = [
-            (center_x - spacing_x // 2, center_y, "Avg Temp", "#4CAF50"),
-            (center_x + spacing_x // 2, center_y, "Avg Humidity", "#009688"),
+        # Bottom row positions
+        bottom_row_y = center_y + row_spacing // 2
+        bottom_positions = [
+            (center_x - spacing_x, bottom_row_y, "Sensor 2 Temp", "#FF5722"),
+            (center_x + spacing_x, bottom_row_y, "Sensor 2 Humidity", "#2196F3"),
         ]
 
         # Create hexagon widgets
         self.hexagons = []
 
-        # Individual sensors
-        for x, y, title, color in positions:
-            hex_widget = HexagonWidget(self.canvas, x, y, hex_size, title, color)
+        # Top row hexagons
+        for x, y, title, color in top_positions:
+            if "Avg" in title:
+                hex_widget = HexagonWidget(self.canvas, x, y, hex_size * 1.3, title, color)
+            else:
+                hex_widget = HexagonWidget(self.canvas, x, y, hex_size, title, color)
             self.hexagons.append(hex_widget)
 
-        # Averages
-        for x, y, title, color in avg_positions:
-            hex_widget = HexagonWidget(self.canvas, x, y, hex_size * 1.2, title, color)
+        # Bottom row hexagons
+        for x, y, title, color in bottom_positions:
+            hex_widget = HexagonWidget(self.canvas, x, y, hex_size, title, color)
             self.hexagons.append(hex_widget)
 
     def on_canvas_resize(self, event):
         """Handle canvas resize event"""
         self.root.after(50, self.create_hexagons)
 
-    def read_sensors(self):
-        """Read data from sensors"""
+    def read_data_from_bridge(self):
+        """Read data from the data bridge JSON file"""
         try:
-            self.temp1 = round(self.sensor1.read_temperature(), 1)
-            self.temp2 = round(self.sensor2.read_temperature(), 1)
-            self.humidity1 = round(self.sensor1.read_humidity(), 1)
-            self.humidity2 = round(self.sensor2.read_humidity(), 1)
+            if not os.path.exists(self.data_file):
+                return None
 
-            # Calculate averages
-            self.avg_temp = round(average(self.temp1, self.temp2), 1)
-            self.avg_humidity = round(average(self.humidity1, self.humidity2), 1)
+            with open(self.data_file, 'r') as f:
+                data = json.load(f)
 
-            return True
+            return data
+
         except Exception as e:
-            print(f"Error reading sensors: {e}")
-            return False
+            print(f"Error reading data file: {e}")
+            return None
 
     def update_display(self):
         """Update the hexagonal display with current values"""
-        if len(self.hexagons) >= 6:
-            # Update individual sensors
-            self.hexagons[0].update_value(self.temp1, "°C")
-            self.hexagons[1].update_value(self.humidity1, "%")
-            self.hexagons[2].update_value(self.temp2, "°C")
-            self.hexagons[3].update_value(self.humidity2, "%")
+        if len(self.hexagons) >= 6 and self.sensor_data:
+            # Update hexagons with data from bridge
+            sensor1 = self.sensor_data.get('sensor1', {})
+            sensor2 = self.sensor_data.get('sensor2', {})
+            averages = self.sensor_data.get('averages', {})
+            status = self.sensor_data.get('status', {})
 
-            # Update averages
-            self.hexagons[4].update_value(self.avg_temp, "°C")
-            self.hexagons[5].update_value(self.avg_humidity, "%")
+            # Top row: [Sensor 1 Temp, Avg Temp, Avg Humidity, Sensor 1 Humidity]
+            # Bottom row: [Sensor 2 Temp, Sensor 2 Humidity]
+            self.hexagons[0].update_value(sensor1.get('temperature', 0.0), "°C")
+            self.hexagons[1].update_value(averages.get('temperature', 0.0), "°C")
+            self.hexagons[2].update_value(averages.get('humidity', 0.0), "%")
+            self.hexagons[3].update_value(sensor1.get('humidity', 0.0), "%")
+            self.hexagons[4].update_value(sensor2.get('temperature', 0.0), "°C")
+            self.hexagons[5].update_value(sensor2.get('humidity', 0.0), "%")
 
-            # Update humidity warning color
-            if self.avg_humidity > self.humidity_limit:
-                self.hexagons[5].update_color("#F44336")  # Red for warning
-                if not self.warning_active:
-                    self.warning_active = True
-                    if self.ledstrip:
-                        self.ledstrip.clear()
-                        self.ledstrip.set_color((255, 0, 0))
+            # Update warning color for humidity
+            if status.get('humidity_warning', False):
+                self.hexagons[2].update_color("#F44336")  # Red for warning
             else:
-                self.hexagons[5].update_color("#009688")  # Normal color
-                if self.warning_active:
-                    self.warning_active = False
-                    if self.ledstrip:
-                        self.ledstrip.clear()
-                        self.ledstrip.set_color((255, 255, 255))
+                self.hexagons[2].update_color("#009688")  # Normal color
 
-    def update_status(self, message, color="#4CAF50"):
-        """Update status message"""
-        self.status_label.config(text=message, fg=color)
+    def update_status_display(self):
+        """Update connection and status information"""
+        if self.last_update:
+            time_str = self.last_update.strftime("%H:%M:%S")
+            self.last_update_label.config(text=time_str, fg="#4CAF50")
 
-    def sensor_loop(self):
-        """Main sensor reading loop (runs in separate thread)"""
+        # Update connection status
+        status = self.sensor_data.get('status', {})
+        system_status = status.get('system_status', 'unknown')
+
+        if system_status == 'operational':
+            self.connection_label.config(
+                text="🟢 Connected to Data Bridge",
+                fg="#4CAF50"
+            )
+        else:
+            self.connection_label.config(
+                text="🔴 Connection Lost",
+                fg="#F44336"
+            )
+
+    def data_loop(self):
+        """Main data reading loop (runs in separate thread)"""
+        consecutive_failures = 0
+        max_failures = 5
+
         while self.running:
             try:
-                if self.read_sensors():
+                data = self.read_data_from_bridge()
+
+                if data:
+                    self.sensor_data = data
+                    self.last_update = datetime.now()
+                    consecutive_failures = 0
+
                     # Schedule GUI update in main thread
                     self.root.after(0, self.update_display)
-                    self.root.after(0, self.update_status, "Connected - Reading sensors...")
+                    self.root.after(0, self.update_status_display)
+
                 else:
-                    self.root.after(0, self.update_status, "Sensor read error!", "#F44336")
+                    consecutive_failures += 1
+                    if consecutive_failures >= max_failures:
+                        self.root.after(0, self.connection_label.config, {
+                            'text': '🔴 Data Bridge Not Found',
+                            'fg': '#F44336'
+                        })
 
                 time.sleep(self.update_interval)
+
             except Exception as e:
-                print(f"Sensor loop error: {e}")
-                self.root.after(0, self.update_status, f"Error: {str(e)}", "#F44336")
+                print(f"Data loop error: {e}")
+                consecutive_failures += 1
                 time.sleep(self.update_interval)
 
-    def start_sensor_thread(self):
-        """Start the sensor reading thread"""
-        self.sensor_thread = threading.Thread(target=self.sensor_loop, daemon=True)
-        self.sensor_thread.start()
-        self.update_status("Starting sensor monitoring...")
+    def start_data_thread(self):
+        """Start the data reading thread"""
+        self.data_thread = threading.Thread(target=self.data_loop, daemon=True)
+        self.data_thread.start()
 
     def on_closing(self):
         """Handle application closing"""
-        print("Shutting down application...")
+        print("Shutting down GUI...")
         self.running = False
-
-        # Cleanup sensors
-        try:
-            if hasattr(self, 'sensor1'):
-                self.sensor1.close()
-            if hasattr(self, 'sensor2'):
-                self.sensor2.close()
-            if hasattr(self, 'ledstrip') and self.ledstrip:
-                self.ledstrip.clear()
-        except Exception as e:
-            print(f"Cleanup error: {e}")
-
         self.root.destroy()
 
 
@@ -389,7 +391,7 @@ def main():
     root = tk.Tk()
 
     # Create the application
-    app = TemperatureHumidityGUI(root)
+    app = TemperatureHumidityGUIWithBridge(root)
 
     # Handle window closing
     root.protocol("WM_DELETE_WINDOW", app.on_closing)

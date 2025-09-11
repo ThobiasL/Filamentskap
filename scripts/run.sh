@@ -1,5 +1,5 @@
 # Start main.py i bakgrunnen
-cd Filamentskap/core
+cd ../core
 python3 main.py &
 
 # Kjør GUI i forgrunnen

@@ -3,6 +3,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))) # Add the parent directory to the Python path
 from adapters.BME280_adapter import BME280Sensor, average
 from adapters.ledstrip_adapter import LEDStripAdapter
+from adapters.guiReadingData_adapter import guiReadingData_adapter
 import time
 
 def main():
@@ -18,6 +19,7 @@ def main():
     # Initialize adapters for BME280 sensors
     sensor1 = BME280Sensor(0x77)
     sensor2 = BME280Sensor(0x76)
+
 
     # Initialize adapters for LED strip
     ledstrip = LEDStripAdapter(17, pin = 18) # GPIO 18
@@ -69,6 +71,7 @@ def main():
 
             # Skriv ut verdiene
             print("sensors online")
+            guiReadingData_adapter(temperature1, temperature2, average_temp, humidity1, humidity2, average_humidity)
 
             time.sleep(2)
         except KeyboardInterrupt:

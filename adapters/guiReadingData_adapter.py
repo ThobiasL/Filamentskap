@@ -1,17 +1,13 @@
-from core.main import average
+from ports.GuiDataBridge_port import gui_data_bridge
 
-class guiReadingData_adapter:
-    def __init__(self, sensor1, sensor2):
-        self.sensor1 = sensor1
-        self.sensor2 = sensor2
+class guiReadingData_adapter(gui_data_bridge):
+    def __init__(self, temperature1, temperature2, average_temperature, humidity1, humidity2, average_humidity):
+        self.temperature1 = temperature1
+        self.temperature2 = temperature2
+        self.average_temperature = average_temperature
+        self.humidity1 = humidity1
+        self.humidity2 = humidity2
+        self.average_humidity = average_humidity
 
-    def readData(self):
-        temperature1 = round(self.sensor1.read_temperature(),1)
-        temperature2 = round(self.sensor2.read_temperature(),1)
-        humidity1 = round(self.sensor1.read_humidity(),1)
-        humidity2 = round(self.sensor2.read_humidity(),1)
-
-        average_temperature = average(temperature1, temperature2)
-        average_humidity = average(humidity1, humidity2)
-
-        return temperature1, temperature2, humidity1, humidity2, average_temperature, average_humidity
+    def readData(self) -> tuple[float, float, float, float, float, float]:
+        return (self.temperature1, self.temperature2, self.average_temperature, self.humidity1, self.humidity2, self.average_humidity)

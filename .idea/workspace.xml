@@ -5,9 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1d3ead70-1e20-407c-9e5d-72f992b9d8d9" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/ports/GuiDataBridge_port.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/adapters/guiReadingData_adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/adapters/guiReadingData_adapter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/application/gui_data_bridge.py" beforeDir="false" afterPath="$PROJECT_DIR$/application/gui_data_bridge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,7 +81,7 @@
       <workItem from="1751900138858" duration="455000" />
       <workItem from="1757484870588" duration="19000" />
       <workItem from="1757506368722" duration="1531000" />
-      <workItem from="1757933309116" duration="6311000" />
+      <workItem from="1757933309116" duration="8563000" />
     </task>
     <servers />
   </component>

@@ -68,14 +68,7 @@ def main():
             '''warning_led(average_humidity)'''
 
             # Skriv ut verdiene
-            print(f"Sensor1 temperature: {temperature1} °C")
-            print(f"Sensor2 Temperature: {temperature2} °C")
-            print(f"Average Temperature: {average_temp} °C")
-
-            print(f"Sensor1 humidity: {humidity1} %")
-            print(f"Sensor2 humidity: {humidity2} %")
-            print(f"Average Humidity: {average_humidity} %")
-
+            print("sensors online")
 
             time.sleep(2)
         except KeyboardInterrupt:

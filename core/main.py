@@ -3,7 +3,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))) # Add the parent directory to the Python path
 from adapters.BME280_adapter import BME280Sensor, average
 from adapters.ledstrip_adapter import LEDStripAdapter
-from application.data_bridge import Readings, update_readings
+from adapters.sensor_data_bridge_adapter import guiReadingData_adapter
 import time
 
 
@@ -27,6 +27,9 @@ def main():
     ledstrip.clear()
     ledstrip.set_color(normal_led_state)
     time.sleep(0.1)
+
+    # Initialize adapter for GUI data reading
+    Sensor_data = guiReadingData_adapter(0,0,0,0,0,0)
 
     # Function for LED strip
     def warning_led(average_humidity, maneul_override, led_warning_signal, timer, timer_limit):
@@ -72,20 +75,8 @@ def main():
 
             # Skriv ut verdiene
             print("sensors online")
-            '''
-            def data_list():
-                return {"temperature1": temperature1, "temperature2": temperature2, "average_temp": average_temp,
-                        "humidity1": humidity1, "humidity2": humidity2, "average_humidity": average_humidity}
-                        '''
-            update_readings(Readings(
-                temperature1=temperature1,
-                temperature2=temperature2,
-                average_temp=average_temp,
-                humidity1=humidity1,
-                humidity2=humidity2,
-                average_humidity=average_humidity,
-            ))
-            #guiReadingData_adapter(temperature1, temperature2, average_temp, humidity1, humidity2, average_humidity)
+
+            Sensor_data.updateData(temperature1, temperature2, average_temp, humidity1, humidity2, average_humidity)
 
 
             time.sleep(2)

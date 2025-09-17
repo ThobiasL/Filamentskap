@@ -1,4 +1,4 @@
-from adapters.guiReadingData_adapter import GuiReadingDataAdapter
+from adapters.sensor_data_bridge_adapter import GuiReadingDataAdapter
 
 values = GuiReadingDataAdapter().readData()
 

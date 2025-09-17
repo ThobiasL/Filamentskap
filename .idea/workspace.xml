@@ -6,10 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="1d3ead70-1e20-407c-9e5d-72f992b9d8d9" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/adapters/guiReadingData_adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/adapters/guiReadingData_adapter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/application/gui_data_bridge.py" beforeDir="false" afterPath="$PROJECT_DIR$/application/data_bridge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/adapters/guiReadingData_adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/adapters/sensor_data_bridge_adapter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/application/data_bridge.py" beforeDir="false" afterPath="$PROJECT_DIR$/application/dataDokument.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/application/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/application/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/core/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ports/GuiDataBridge_port.py" beforeDir="false" afterPath="$PROJECT_DIR$/ports/DataBridge_port.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -86,7 +87,7 @@
       <workItem from="1758006673091" duration="4000" />
       <workItem from="1758092715986" duration="121000" />
       <workItem from="1758092968703" duration="162000" />
-      <workItem from="1758110602700" duration="2456000" />
+      <workItem from="1758110602700" duration="8765000" />
     </task>
     <servers />
   </component>

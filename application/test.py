@@ -1,5 +1,5 @@
-from adapters.guiReadingData_adapter import guiReadingData_adapter
+from adapters.guiReadingData_adapter import GuiReadingDataAdapter
 
-values = guiReadingData_adapter().readData()
+values = GuiReadingDataAdapter().readData()
 
 print(values)

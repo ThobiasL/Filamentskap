@@ -3,7 +3,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))) # Add the parent directory to the Python path
 from adapters.BME280_adapter import BME280Sensor, average
 from adapters.ledstrip_adapter import LEDStripAdapter
-#from application.gui_data_bridge import Readings, update_readings
+from application.data_bridge import Readings, update_readings
 import time
 
 
@@ -72,18 +72,19 @@ def main():
 
             # Skriv ut verdiene
             print("sensors online")
+            '''
             def data_list():
                 return {"temperature1": temperature1, "temperature2": temperature2, "average_temp": average_temp,
                         "humidity1": humidity1, "humidity2": humidity2, "average_humidity": average_humidity}
-            '''update_readings(Readings(
-                ts=time.time(),
+                        '''
+            update_readings(Readings(
                 temperature1=temperature1,
                 temperature2=temperature2,
                 average_temp=average_temp,
                 humidity1=humidity1,
                 humidity2=humidity2,
                 average_humidity=average_humidity,
-            ))'''
+            ))
             #guiReadingData_adapter(temperature1, temperature2, average_temp, humidity1, humidity2, average_humidity)
 
 

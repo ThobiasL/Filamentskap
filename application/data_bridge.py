@@ -1,5 +1,4 @@
 # data_bridge.py
-'''
 from __future__ import annotations
 import json, os, tempfile, time
 from dataclasses import dataclass, asdict
@@ -9,7 +8,6 @@ _DATA_FILE = "/tmp/env_readings.json"
 
 @dataclass
 class Readings:
-    ts: float
     temperature1: float
     temperature2: float
     average_temp: float
@@ -53,3 +51,4 @@ print(json_data)
 
 with open('/tmp/env_readings.json', 'w') as f:
     f.write(json_data)
+'''

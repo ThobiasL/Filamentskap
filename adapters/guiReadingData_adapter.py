@@ -14,7 +14,7 @@ class guiReadingData_adapter(gui_data_bridge):
 '''
 # adapters/guiReadingData_adapter.py
 from ports.GuiDataBridge_port import gui_data_bridge
-from application.gui_data_bridge import read_latest
+from application.data_bridge import read_latest
 
 class GuiReadingDataAdapter(gui_data_bridge):
     def __init__(self) -> None:

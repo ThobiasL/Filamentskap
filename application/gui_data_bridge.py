@@ -1,4 +1,5 @@
 # data_bridge.py
+'''
 from __future__ import annotations
 import json, os, tempfile, time
 from dataclasses import dataclass, asdict
@@ -42,3 +43,13 @@ def read_latest() -> Optional[Readings]:
         return Readings(**obj)
     except Exception:
         return None
+'''
+from adapters.guiReadingData_adapter import GuiReadingDataAdapter
+import json
+
+data = GuiReadingDataAdapter().readData()
+json_data = json.dumps(data)
+print(json_data)
+
+with open('/tmp/env_readings.json', 'w') as f:
+    f.write(json_data)

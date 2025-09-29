@@ -74,10 +74,8 @@ def main():
             '''warning_led(average_humidity)'''
 
             # Skriv ut verdiene
-            print("sensors online")
-
-            Sensor_data.updateData(temperature1, temperature2, average_temp, humidity1, humidity2, average_humidity)
-
+            print("sensors online sending data to GUI")
+            Sensor_data.sendData([temperature1, temperature2, average_temp, humidity1, humidity2, average_humidity])
 
             time.sleep(2)
         except KeyboardInterrupt:

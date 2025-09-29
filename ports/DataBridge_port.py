@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 
-
 class guiDataBridge(ABC):
     @abstractmethod
     def readData(self) -> list[float]:

@@ -11,7 +11,7 @@ from tkinter import ttk
 import threading
 import time
 import math
-import json
+from adapters.sensor_data_bridge_adapter import guiReadingData_adapter
 from datetime import datetime
 
 
@@ -126,13 +126,13 @@ class TemperatureHumidityGUIWithBridge:
         self.last_update = None
         self.connection_status = "Connecting..."
 
-    def setup_data_source(self):
-        """Setup data source path"""
-        self.app_dir = os.path.dirname(os.path.abspath(__file__))
-        self.project_root = os.path.dirname(self.app_dir)
-        self.data_file = os.path.join(self.project_root, 'data', 'sensor_data.json')
+        # NYTT: unngå race condition når update_display() kjører før hexagoner er laget
+        self.hexagons = []
 
-        print(f"Looking for data file: {self.data_file}")
+    def setup_data_source(self):
+        """Setup data source (adapter)"""
+        self.bridge = guiReadingData_adapter()
+        print("Data bridge adapter initialisert.")
 
     def create_widgets(self):
         """Create and arrange GUI widgets"""
@@ -281,19 +281,41 @@ class TemperatureHumidityGUIWithBridge:
         self.root.after(50, self.create_hexagons)
 
     def read_data_from_bridge(self):
-        """Read data from the data bridge JSON file"""
+        """Read data via Sensor Data Bridge adapter"""
         try:
-            if not os.path.exists(self.data_file):
+            values = self.bridge.readData()
+            if values is None:
                 return None
 
-            with open(self.data_file, 'r') as f:
-                data = json.load(f)
+            # Hvis dokumentet etter hvert returnerer dict direkte, støtt begge formater:
+            if isinstance(values, dict):
+                # sikre at obligatoriske felt finnes; legg til status hvis mangler
+                values.setdefault('status', {'humidity_warning': False, 'system_status': 'operational'})
+                values.setdefault('timestamp', datetime.now().isoformat())
+                return values
 
-            return data
+            # Ellers: mappe liste → dict-formatet GUI-et forventer
+            return self._values_to_sensor_dict(values)
 
         except Exception as e:
-            print(f"Error reading data file: {e}")
+            print(f"Error reading from adapter: {e}")
             return None
+
+    def _values_to_sensor_dict(self, values):
+        """Map [t1, t2, t_avg, h1, h2, h_avg] -> GUI sitt dict-format"""
+        if not isinstance(values, (list, tuple)) or len(values) != 6:
+            raise ValueError("Forventer liste/tuple med 6 verdier fra adapteren")
+        t1, t2, t_avg, h1, h2, h_avg = map(float, values)
+        return {
+            'sensor1': {'temperature': t1, 'humidity': h1},
+            'sensor2': {'temperature': t2, 'humidity': h2},
+            'averages': {'temperature': t_avg, 'humidity': h_avg},
+            'status': {
+                'humidity_warning': False,  # behold standard oppførsel
+                'system_status': 'operational'  # regnes som tilkoblet når lesing lykkes
+            },
+            'timestamp': datetime.now().isoformat()
+        }
 
     def update_display(self):
         """Update the hexagonal display with current values"""

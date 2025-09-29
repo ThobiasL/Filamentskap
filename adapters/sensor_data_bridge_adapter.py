@@ -1,16 +1,25 @@
-from ports.DataBridge_port import gui_data_bridge
+from typing import Sequence
+from ports.DataBridge_port import guiDataBridge
+from application.dataDokument import json_data_document
 
-class guiReadingData_adapter(gui_data_bridge):
-    def __init__(self, temperature1, temperature2, average_temperature, humidity1, humidity2, average_humidity):
+class guiReadingData_adapter(guiDataBridge):
+    def __init__(self, temperature1=1, temperature2=1, average_temperature=1, humidity1=1, humidity2=1, average_humidity=1):
         self.temperature1 = temperature1
         self.temperature2 = temperature2
         self.average_temperature = average_temperature
         self.humidity1 = humidity1
         self.humidity2 = humidity2
         self.average_humidity = average_humidity
+        self.document = json_data_document()
 
-    def readData(self) -> tuple[float, float, float, float, float, float]:
-        return (self.temperature1, self.temperature2, self.average_temperature, self.humidity1, self.humidity2, self.average_humidity)
+    def readData(self) -> list[float]:
+        data = self.document.loadData()
+        return data
+
+    def sendData(self, data_inn: Sequence[float]) -> None:
+        self.document.saveData(list(map(float, data_inn)))
+
+
 
 
 '''

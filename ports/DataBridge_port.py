@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 
-class gui_data_bridge(ABC):
+
+class guiDataBridge(ABC):
     @abstractmethod
-    def readData(self) -> tuple[float, float, float, float, float, float]:
+    def readData(self) -> list[float]:
         pass
 
     @abstractmethod
-    def updateData(self, data: tuple[float, float, float, float, float, float]) -> None:
+    def sendData(self, data_inn) -> list[float]:
         pass

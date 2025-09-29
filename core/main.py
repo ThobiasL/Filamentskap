@@ -3,7 +3,9 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))) # Add the parent directory to the Python path
 from adapters.BME280_adapter import BME280Sensor, average
 from adapters.ledstrip_adapter import LEDStripAdapter
+from adapters.sensor_data_bridge_adapter import guiReadingData_adapter
 import time
+
 
 def main():
     # Seting up variables
@@ -19,14 +21,18 @@ def main():
     sensor1 = BME280Sensor(0x77)
     sensor2 = BME280Sensor(0x76)
 
+
     # Initialize adapters for LED strip
     ledstrip = LEDStripAdapter(17, pin = 18) # GPIO 18
     ledstrip.clear()
     ledstrip.set_color(normal_led_state)
     time.sleep(0.1)
 
+    # Initialize adapter for GUI data reading
+    Sensor_data = guiReadingData_adapter(0,0,0,0,0,0)
+
     # Function for LED strip
-    def warning_led(average_humidity):
+    def warning_led(average_humidity, maneul_override, led_warning_signal, timer, timer_limit):
         if not maneul_override:
             if average_humidity > humidity_limit and not led_warning_signal:
                 ledstrip.clear()
@@ -49,8 +55,8 @@ def main():
         else:
             timer += 1
 
-        
         time.sleep(0.1)
+
 
     while True:
         try:
@@ -68,14 +74,8 @@ def main():
             '''warning_led(average_humidity)'''
 
             # Skriv ut verdiene
-            print(f"Sensor1 temperature: {temperature1} °C")
-            print(f"Sensor2 Temperature: {temperature2} °C")
-            print(f"Average Temperature: {average_temp} °C")
-
-            print(f"Sensor1 humidity: {humidity1} %")
-            print(f"Sensor2 humidity: {humidity2} %")
-            print(f"Average Humidity: {average_humidity} %")                
-
+            print("sensors online sending data to GUI")
+            Sensor_data.sendData([temperature1, temperature2, average_temp, humidity1, humidity2, average_humidity])
 
             time.sleep(2)
         except KeyboardInterrupt:

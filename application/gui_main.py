@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+cd#!/usr/bin/env python3
 """
 Updated GUI Program that reads from Data Bridge
 File: Filamentskap/application/gui_main_with_bridge.py

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Updated GUI Program that reads from Data Bridge
 File: Filamentskap/application/gui_main_with_bridge.py
@@ -6,6 +5,7 @@ File: Filamentskap/application/gui_main_with_bridge.py
 
 import sys
 import os
+#sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))  # Add parent directory to Python path
 import tkinter as tk
 from tkinter import ttk
 import threading
@@ -13,6 +13,7 @@ import time
 import math
 from adapters.sensor_data_bridge_adapter import guiReadingData_adapter
 from datetime import datetime
+
 
 
 class HexagonWidget:

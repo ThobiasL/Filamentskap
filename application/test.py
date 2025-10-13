@@ -4,6 +4,3 @@ measurement = guiReadingData_adapter()
 values = measurement.readData()
 
 print(values)
-print(values[0])
-print(values[1])
-print(values[2])

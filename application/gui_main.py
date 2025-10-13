@@ -5,7 +5,7 @@ File: Filamentskap/application/gui_main_with_bridge.py
 
 import sys
 import os
-#sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))  # Add parent directory to Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))  # Add parent directory to Python path
 import tkinter as tk
 from tkinter import ttk
 import threading

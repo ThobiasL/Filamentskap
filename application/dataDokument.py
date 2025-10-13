@@ -2,7 +2,7 @@ import json
 from typing import Sequence
 
 class json_data_document:
-    def __init__(self, filename='../out/SensorData.json'):
+    def __init__(self, filename='../Filamentskap/out/SensorData.json'):
         self.filename = filename
 
     def saveData(self, data: Sequence[float]) -> None:
